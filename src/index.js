@@ -1,6 +1,6 @@
 const { Telegraf } = require('telegraf');
 const firebaseAdmin = require('firebase-admin');
-const dotenv = require("dotenv");
+const dotenv = require('dotenv');
 
 dotenv.config();
 
