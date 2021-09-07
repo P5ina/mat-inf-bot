@@ -31,7 +31,7 @@ function startBot() {
   });
 
   require('./events/index').forEach((cronEvent) => {
-    const task = cron.schedule(cronEvent.time, cronEvent.handler({
+    const task = cron.schedule(cronEvent.time, () => cronEvent.handler({
       firestore,
       bot,
     }));
