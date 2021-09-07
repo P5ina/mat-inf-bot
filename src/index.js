@@ -31,18 +31,13 @@ function startBot() {
   });
 
   require('./events/index').forEach((cronEvent) => {
-    const respond = (task) => {
-      process.once('SIGINT', () => task.stop());
-      process.once('SIGTERM', () => task.stop());
-    };
-
-    cronEvent.handler({
-      cron,
+    const task = cron.schedule(cronEvent.time, cronEvent.handler({
       firestore,
       bot,
-      time: cronEvent.time,
-      respond,
-    });
+    }));
+
+    process.once('SIGINT', () => task.stop());
+    process.once('SIGTERM', () => task.stop());
   });
 
   // Enable graceful stop
