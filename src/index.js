@@ -2,43 +2,49 @@ const { Telegraf } = require('telegraf');
 const firebaseAdmin = require('firebase-admin');
 const dotenv = require('dotenv');
 const cron = require('node-cron');
+const Listener = require('./service/listener');
 
 dotenv.config();
 
 function createDeps() {
+  const bot = new Telegraf(process.env.BOT_TOKEN);
   const serviceAccount = require(process.env.FIREBASE_CREDENTIAL_PATH);
   firebaseAdmin.initializeApp({
     credential: firebaseAdmin.credential.cert(serviceAccount)
   });
   const firestore = firebaseAdmin.firestore();
+  const listener = new Listener(bot);
 
-  return { firestore };
+  return { bot, firestore, listener };
 }
 
 // In case createDeps() is async
 function startBot() {
-  const bot = new Telegraf(process.env.BOT_TOKEN);
-  bot.start((ctx) => ctx.reply('Привет 👋! Чтобы узнать список доступных команд напиши /help'));
-  bot.launch();
+  const { bot, firestore, listener } = createDeps();
 
-  const { firestore } = createDeps();
+  bot.start((ctx) => ctx.reply('Привет 👋! Чтобы узнать список доступных команд напиши /help'));
 
   require('./commands/index').forEach((command) => {
-    bot.command(command.name, async (ctx) => command.handler({
+    bot.command(command.name, async (ctx, next) => command.handler({
       ctx,
+      next,
       firestore,
+      listener,
     }));
   });
 
-  require('./events/index').forEach((cronEvent) => {
-    const task = cron.schedule(cronEvent.time, () => cronEvent.handler({
-      firestore,
-      bot,
-    }));
+  listener.init(bot);
+  bot.launch();
 
-    process.once('SIGINT', () => task.stop());
-    process.once('SIGTERM', () => task.stop());
-  });
+  // require('./events/index').forEach((cronEvent) => {
+  //   const task = cron.schedule(cronEvent.time, () => cronEvent.handler({
+  //     firestore,
+  //     bot,
+  //   }));
+
+  //   process.once('SIGINT', () => task.stop());
+  //   process.once('SIGTERM', () => task.stop());
+  // });
 
   // Enable graceful stop
   process.once('SIGINT', () => bot.stop('SIGINT'));
