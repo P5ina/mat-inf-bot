@@ -1,6 +1,7 @@
 const { Telegraf } = require('telegraf');
 const firebaseAdmin = require('firebase-admin');
 const dotenv = require('dotenv');
+const cron = require('node-cron');
 
 dotenv.config();
 
@@ -27,6 +28,21 @@ function startBot() {
       ctx,
       firestore,
     }));
+  });
+
+  require('./events/index').forEach((cronEvent) => {
+    const respond = (task) => {
+      process.once('SIGINT', () => task.stop());
+      process.once('SIGTERM', () => task.stop());
+    };
+
+    cronEvent.handler({
+      cron,
+      firestore,
+      bot,
+      time: cronEvent.time,
+      respond,
+    });
   });
 
   // Enable graceful stop
