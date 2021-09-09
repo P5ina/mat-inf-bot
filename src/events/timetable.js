@@ -19,8 +19,6 @@ module.exports = async ({
 
   let message;
 
-  // shish
-
   if (doc.exists) {
     const data = doc.data();
 
