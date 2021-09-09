@@ -3,6 +3,8 @@ module.exports = async ({
   bot,
   table,
 }) => {
+// shish
+
   console.log('⚡️ Event started...');
   const eventHeader = '*📚 Расписание на завтра*\n\n';
 
