@@ -1,6 +1,6 @@
 module.exports = [
   {
-    time: '*/5 * * * * *',
+    time: '*/10 * * * * *',
     handler: require('./timetable'),
   },
 ];

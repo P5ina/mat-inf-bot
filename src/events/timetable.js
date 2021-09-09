@@ -1,20 +1,40 @@
 module.exports = async ({
   firestore,
   bot,
+  table,
 }) => {
+  console.log('⚡️ Event started...');
   const eventHeader = '*📚 Расписание на завтра*\n\n';
-  // TODO: Get datetime
-  const lessonRef = firestore.collection('timetable').doc('monday');
 
+  const date = new Date();
+  const weekday = Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date);
+  // TODO: Get datetime
+  console.log('🔍 Finding ref document...');
+  const lessonRef = firestore.collection('timetable').doc(weekday.toLowerCase());
+
+  console.log('💾 Getting document...');
   const doc = await lessonRef.get();
+  console.log('💾 Document getted!');
 
   let message;
 
   if (doc.exists) {
-    message = `\`\`\`${JSON.stringify(doc.data())}\`\`\``;
+    const data = doc.data();
+
+    const tableRaw = data.lessons.map((lesson, index) => {
+      const lessonDate = new Date(data.lessonsStart.toDate().getTime() + index * 60 * 60000);
+      const lessonTime = Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' }).format(lessonDate);
+
+      return [`\`${lessonTime}\``, lesson];
+    });
+
+    message = table(tableRaw, { align: ['l', 'l'] });
   } else {
+    console.log('❌ Document doesn\'t exists!');
+
     message = 'На завтра нет расписания 🎉';
   }
 
-  bot.telegram.sendMessage(process.env.CHAT_ID, `${eventHeader} ${message}`, { parse_mode: 'Markdown' });
+  console.log('💬 Sending message to group...');
+  bot.telegram.sendMessage(process.env.CHAT_ID, `${eventHeader}${message}`, { parse_mode: 'Markdown' });
 };
