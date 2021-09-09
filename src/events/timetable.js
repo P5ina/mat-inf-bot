@@ -7,6 +7,7 @@ module.exports = async ({
   const eventHeader = '*📚 Расписание на завтра*\n\n';
 
   const date = new Date();
+  date.setDate(date.getDate() + 1);
   const weekday = Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(date);
   // TODO: Get datetime
   console.log('🔍 Finding ref document...');
