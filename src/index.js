@@ -1,4 +1,4 @@
-const { Telegraf } = require('telegraf');
+const { Telegraf, Scenes, Markup, session } = require('telegraf');
 const firebaseAdmin = require('firebase-admin');
 const dotenv = require('dotenv');
 const cron = require('node-cron');
@@ -8,26 +8,32 @@ dotenv.config();
 
 function createDeps() {
   const bot = new Telegraf(process.env.BOT_TOKEN);
-  const serviceAccount = require(process.env.FIREBASE_CREDENTIAL_PATH);
   firebaseAdmin.initializeApp({
-    credential: firebaseAdmin.credential.cert(serviceAccount)
+    credential: firebaseAdmin.credential.cert(require(process.env.FIREBASE_CREDENTIAL_PATH))
   });
   const firestore = firebaseAdmin.firestore();
 
-  return { bot, firestore };
+  return { bot, firebaseAdmin, firestore };
 }
 
 // In case createDeps() is async
 function startBot() {
   const { bot, firestore } = createDeps();
 
+  const scenes = require('./commands/index').map(({ scene }) => scene({
+    Scenes,
+    Markup,
+    firebaseAdmin,
+    firestore
+  }));
+  const stage = new Scenes.Stage(scenes);
+
+  bot.use(session());
+  bot.use(stage.middleware());
   bot.start((ctx) => ctx.reply('Привет 👋! Чтобы узнать список доступных команд напиши /help'));
 
   require('./commands/index').forEach((command) => {
-    bot.command(command.name, async (ctx) => command.handler({
-      ctx,
-      firestore,
-    }));
+    bot.command(command.name, (ctx) => ctx.scene.enter(command.name));
   });
 
   bot.launch();

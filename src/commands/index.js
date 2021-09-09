@@ -1,10 +1,10 @@
 module.exports = [
   {
     name: 'help',
-    handler: require('./help'),
+    scene: require('./help'),
   },
   {
-    name: 'add_news',
-    handler: require('./add-news'),
+    name: 'add_timetable',
+    scene: require('./add-timetable'),
   },
 ];
