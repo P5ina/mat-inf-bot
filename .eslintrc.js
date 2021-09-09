@@ -14,5 +14,6 @@ module.exports = {
     'operator-linebreak': 'off',
     'no-await-in-loop': 'off',
     'import/no-dynamic-require': 'off',
+    'consistent-return': 'off',
   },
 };

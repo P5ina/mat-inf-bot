@@ -1,4 +1,4 @@
-const { Telegraf, Scenes, Markup, session } = require('telegraf');
+const { Telegraf, Scenes, Markup, Composer, session } = require('telegraf');
 const firebaseAdmin = require('firebase-admin');
 const dotenv = require('dotenv');
 const cron = require('node-cron');
@@ -23,6 +23,7 @@ function startBot() {
   const scenes = require('./commands/index').map(({ scene }) => scene({
     Scenes,
     Markup,
+    Composer,
     firebaseAdmin,
     firestore
   }));
