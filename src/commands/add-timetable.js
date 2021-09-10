@@ -51,7 +51,7 @@ module.exports = ({
       return ctx.wizard.next();
     },
     (ctx) => {
-      const lessons = ctx.message.text.trim().split('\n');
+      const lessons = ctx.message.text.trim().split(/\s+/);
       const [hours, minutes] = ctx.wizard.state.time.split(':');
 
       firestore.collection('timetable').doc(ctx.wizard.state.dayOfWeek).set({
